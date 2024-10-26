@@ -22,4 +22,10 @@ public class TaskController {
     public ResponseEntity<List<Task>> getAllTasks() {
         return ResponseEntity.ok(taskService.getAllTask());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
+        task.setId(id);
+        return ResponseEntity.ok(taskService.updateTask(task));
+    }
 }

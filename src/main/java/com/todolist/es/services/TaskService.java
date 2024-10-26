@@ -18,4 +18,8 @@ public class TaskService {
     public List<Task> getAllTask() {
         return taskRepository.findAll();
     }
+
+    public Task updateTask(Task task) {
+        return taskRepository.save(task);
+    }
 }
