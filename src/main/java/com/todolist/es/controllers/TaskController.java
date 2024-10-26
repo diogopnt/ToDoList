@@ -28,4 +28,10 @@ public class TaskController {
         task.setId(id);
         return ResponseEntity.ok(taskService.updateTask(task));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.ok(true);
+    }
 }
