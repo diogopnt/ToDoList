@@ -34,4 +34,13 @@ public class TaskController {
         taskService.deleteTask(id);
         return ResponseEntity.ok(true);
     }
+
+    @GetMapping("/completed")
+    public ResponseEntity<List<Task>> getAllCompletedTasks() {
+        return ResponseEntity.ok(taskService.findAllCompletedTask());
+    }
+    @GetMapping("/incomplete")
+    public ResponseEntity<List<Task>> getAllIncompleteTasks() {
+        return ResponseEntity.ok(taskService.findAllInCompleteTask());
+    }
 }

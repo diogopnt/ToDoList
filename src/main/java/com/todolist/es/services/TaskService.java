@@ -26,4 +26,13 @@ public class TaskService {
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
+
+    public List<Task> findAllCompletedTask() {
+        return taskRepository.findByCompletedTrue();
+    }
+
+    public List<Task> findAllInCompleteTask() {
+        return taskRepository.findByCompletedFalse();
+    }
+
 }
