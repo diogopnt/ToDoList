@@ -35,4 +35,7 @@ public class TaskService {
         return taskRepository.findByCompletedFalse();
     }
 
+    public List<Task> findAllByCategory(String category){
+        return taskRepository.findByCategory(category);
+    }
 }

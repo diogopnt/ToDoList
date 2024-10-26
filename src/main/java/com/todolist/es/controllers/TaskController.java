@@ -43,4 +43,9 @@ public class TaskController {
     public ResponseEntity<List<Task>> getAllIncompleteTasks() {
         return ResponseEntity.ok(taskService.findAllInCompleteTask());
     }
+
+    @GetMapping("/filterCategory/{category}")
+    public ResponseEntity<List<Task>> filterByCategory(@PathVariable String category) {
+        return ResponseEntity.ok(taskService.findAllByCategory(category));
+    }
 }
