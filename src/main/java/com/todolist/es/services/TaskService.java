@@ -5,6 +5,7 @@ import com.todolist.es.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 public class TaskService {
@@ -38,4 +39,13 @@ public class TaskService {
     public List<Task> findAllByCategory(String category){
         return taskRepository.findByCategory(category);
     }
+
+    public List<Task>findByDeadline(LocalDateTime deadline){
+        return taskRepository.findByDeadline(deadline);
+    }
+
+    public Task findTaskById(Long id) {
+        return taskRepository.getById(id);
+    }
+
 }

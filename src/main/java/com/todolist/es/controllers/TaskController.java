@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import com.todolist.es.services.TaskService;
 import org.springframework.stereotype.Controller;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -47,5 +48,11 @@ public class TaskController {
     @GetMapping("/filterCategory/{category}")
     public ResponseEntity<List<Task>> filterByCategory(@PathVariable String category) {
         return ResponseEntity.ok(taskService.findAllByCategory(category));
+    }
+
+    @GetMapping("/filterDeadline/{deadline}")
+    public ResponseEntity<List<Task>> filterByDeadline(@PathVariable String deadline) {
+        LocalDateTime parsedDeadline = LocalDateTime.parse(deadline);
+        return ResponseEntity.ok(taskService.findByDeadline(parsedDeadline));
     }
 }
