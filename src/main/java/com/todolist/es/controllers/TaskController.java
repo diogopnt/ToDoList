@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import com.todolist.es.services.TaskService;
 import org.springframework.stereotype.Controller;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -15,5 +16,10 @@ public class TaskController {
     @PostMapping("/")
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
         return ResponseEntity.ok(taskService.createNewTask(task));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<Task>> getAllTasks() {
+        return ResponseEntity.ok(taskService.getAllTask());
     }
 }
