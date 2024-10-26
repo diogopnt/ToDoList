@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 import java.time.LocalDateTime;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/v1/tasks")
 public class TaskController {
