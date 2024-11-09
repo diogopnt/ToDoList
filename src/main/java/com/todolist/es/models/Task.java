@@ -22,12 +22,12 @@ public class Task {
     private Prioritization prioritization;
 
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     public Task() {
     }
 
-    public Task(Long id, String title, String description, boolean completed, String category, LocalDateTime creationDate, LocalDateTime updateDate, LocalDateTime deadline, Prioritization prioritization, Long userId) {
+    public Task(Long id, String title, String description, boolean completed, String category, LocalDateTime creationDate, LocalDateTime updateDate, LocalDateTime deadline, Prioritization prioritization, String userId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -112,11 +112,11 @@ public class Task {
         this.prioritization = prioritization;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 }

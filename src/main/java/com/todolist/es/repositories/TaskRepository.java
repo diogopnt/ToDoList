@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     public List<Task> findByCompletedTrue();
     public List<Task> findByCompletedFalse();
-    public List<Task> findByCategory(String category);
-    public List<Task> findByDeadline(LocalDateTime deadline);
     public Task getById(Long id);
+    List<Task> findByUserId(String userId);
 }

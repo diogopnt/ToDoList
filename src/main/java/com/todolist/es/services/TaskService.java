@@ -6,26 +6,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public Task createNewTask(Task task) {
+    public Task createNewTask(Task task, String userId) {
+        task.setUserId(userId);
+        System.out.printf("Tarefa" + task);
         return taskRepository.save(task);
     }
 
-    public List<Task> getAllTask() {
-        return taskRepository.findAll();
+    public List<Task> getAllTask(String userId) {
+        return taskRepository.findByUserId(userId);
     }
 
-    public Task updateTask(Task task) {
+    public Task updateTask(Task task, String userId) {
+        task.setUserId(userId);
         return taskRepository.save(task);
     }
 
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+    public void deleteTask(Long id, String userId) {
+        Optional<Task> task = taskRepository.findById(id);
+
+        if (task.isPresent() && task.get().getUserId().equals(userId)) {
+            taskRepository.deleteById(id);
+        }
     }
 
     public List<Task> findAllCompletedTask() {
@@ -34,18 +42,6 @@ public class TaskService {
 
     public List<Task> findAllInCompleteTask() {
         return taskRepository.findByCompletedFalse();
-    }
-
-    public List<Task> findAllByCategory(String category){
-        return taskRepository.findByCategory(category);
-    }
-
-    public List<Task>findByDeadline(LocalDateTime deadline){
-        return taskRepository.findByDeadline(deadline);
-    }
-
-    public Task findTaskById(Long id) {
-        return taskRepository.getById(id);
     }
 
 }

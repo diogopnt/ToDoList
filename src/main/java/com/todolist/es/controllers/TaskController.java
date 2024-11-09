@@ -1,11 +1,15 @@
 package com.todolist.es.controllers;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import com.todolist.es.models.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import com.todolist.es.services.TaskService;
 import org.springframework.stereotype.Controller;
+
+import java.sql.SQLOutput;
 import java.util.List;
 import java.time.LocalDateTime;
 
@@ -17,23 +21,33 @@ public class TaskController {
     private TaskService taskService;
     @PostMapping("/")
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
-        return ResponseEntity.ok(taskService.createNewTask(task));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        System.out.println("UserId obtido do SecurityContext: " + userId);
+        System.out.println("Tarefa" + task);
+        return ResponseEntity.ok(taskService.createNewTask(task, userId));
     }
 
     @GetMapping("/")
     public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTask());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        return ResponseEntity.ok(taskService.getAllTask(userId));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
         task.setId(id);
-        return ResponseEntity.ok(taskService.updateTask(task));
+        return ResponseEntity.ok(taskService.updateTask(task, userId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        taskService.deleteTask(id, userId);
         return ResponseEntity.ok(true);
     }
 
@@ -44,16 +58,5 @@ public class TaskController {
     @GetMapping("/incomplete")
     public ResponseEntity<List<Task>> getAllIncompleteTasks() {
         return ResponseEntity.ok(taskService.findAllInCompleteTask());
-    }
-
-    @GetMapping("/filterCategory/{category}")
-    public ResponseEntity<List<Task>> filterByCategory(@PathVariable String category) {
-        return ResponseEntity.ok(taskService.findAllByCategory(category));
-    }
-
-    @GetMapping("/filterDeadline/{deadline}")
-    public ResponseEntity<List<Task>> filterByDeadline(@PathVariable String deadline) {
-        LocalDateTime parsedDeadline = LocalDateTime.parse(deadline);
-        return ResponseEntity.ok(taskService.findByDeadline(parsedDeadline));
     }
 }
