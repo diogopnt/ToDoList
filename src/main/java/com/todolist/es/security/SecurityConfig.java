@@ -33,6 +33,8 @@ public class SecurityConfig {
                         request -> request
                                 .requestMatchers("/api/v1/**").permitAll()
                                 .requestMatchers("/api/token/*").permitAll()
+                                .requestMatchers("/actuator/health").permitAll()
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

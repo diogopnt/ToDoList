@@ -1,6 +1,13 @@
 package com.todolist.es.controllers;
 
 import com.todolist.es.services.JwtUtilService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,105 +24,117 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/token")
+@Tag(name = "Token API", description = "Handles token retrieval and caching for the application.")
 public class GetTokenController {
-    @Value("${external.auth.token.url}") // Define in application.properties
+
+    @Value("${external.auth.token.url}")
     private String tokenUrl;
 
-    @Value("${external.auth.client.credentials}") // Define in application.properties
+    @Value("${external.auth.client.credentials}")
     private String clientCredentials;
 
     private final RestTemplate restTemplate;
-    private final JwtUtilService jwtUtilService; // Add JwtUtilService
+    private final JwtUtilService jwtUtilService;
 
-    // Caching map
     private final Map<String, String> tokenCache = new ConcurrentHashMap<>();
-    // Lock map to handle concurrent requests for the same code
     private final Map<String, Lock> lockMap = new ConcurrentHashMap<>();
 
     public GetTokenController(RestTemplate restTemplate, JwtUtilService jwtUtilService) {
         this.restTemplate = restTemplate;
-        this.jwtUtilService = jwtUtilService; // Initialize JwtUtilService
+        this.jwtUtilService = jwtUtilService;
     }
 
-    // Handle GET request
+    @Operation(
+            summary = "Retrieve a token using an authorization code",
+            description = """
+            This endpoint retrieves a token by sending an authorization code to an external authentication server.
+            If the token is already cached, it is returned from the cache. 
+            Otherwise, it will make a request to the external server to obtain the token.
+        """,
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Token retrieved successfully",
+                            content = @Content(schema = @Schema(example = "{\"token\":\"<your_token_here>\"}"))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
+            }
+    )
+    @Parameters({
+            @Parameter(
+                    name = "code",
+                    description = "Authorization code received from the authentication server",
+                    required = true,
+                    example = "abc123xyz"
+            )
+    })
     @GetMapping("/get")
-    public ResponseEntity<Map<String, Object>> getToken(@RequestParam String code) throws Exception {
+    public ResponseEntity<Map<String, Object>> getToken(
+            @RequestParam String code) throws Exception {
+
         System.out.println("Code: " + code);
 
-        // Check if the token is already cached
         if (tokenCache.containsKey(code)) {
             System.out.println("Returning cached token for code: " + code);
 
             String jwtToken = tokenCache.get(code);
-
             JsonObject jsonObject = new JsonParser().parse(jwtToken).getAsJsonObject();
-
             String id_token = jsonObject.get("id_token").getAsString();
 
             return ResponseEntity.ok(getTokenResponse(jwtToken));
         }
 
-        // Create a lock for this code
         Lock lock = lockMap.computeIfAbsent(code, k -> new ReentrantLock());
-        lock.lock(); // Acquire the lock
+        lock.lock();
 
         try {
-            // Double-check if the token is cached after acquiring the lock
             if (tokenCache.containsKey(code)) {
                 System.out.println("Returning cached token for code after acquiring lock: " + code);
 
                 String jwtToken = tokenCache.get(code);
-
                 JsonObject jsonObject = new JsonParser().parse(jwtToken).getAsJsonObject();
-
                 String id_token = jsonObject.get("id_token").getAsString();
 
                 return ResponseEntity.ok(getTokenResponse(jwtToken));
             }
 
-            // Prepare headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
             headers.setAccept(Collections.singletonList(org.springframework.http.MediaType.APPLICATION_JSON));
             headers.set("Authorization", "Basic " + clientCredentials);
 
-            // Prepare body
             String body = "grant_type=authorization_code" +
                     "&code=" + code +
-                    "&redirect_uri=http://localhost:4200/todo"; //callback
+                    "&redirect_uri=https://es-ua.ddns.net/todo";
 
-            // Create request entity
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
             System.out.println("Headers: " + headers);
             System.out.println("Body: " + body);
 
-            // Make the request (POST to external API)
             ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, entity, String.class);
 
-            // Cache the response body (JWT token or error)
             String jwtToken = response.getBody();
             tokenCache.put(code, jwtToken);
 
             JsonObject jsonObject = new JsonParser().parse(jwtToken).getAsJsonObject();
-
             String id_token = jsonObject.get("id_token").getAsString();
 
             System.out.println(jwtToken);
-            // Prepare the response
             return ResponseEntity.ok(getTokenResponse(jwtToken));
 
         } finally {
-            lock.unlock(); // Always release the lock
-            lockMap.remove(code); // Remove the lock after usage
+            lock.unlock();
+            lockMap.remove(code);
         }
     }
 
-    // Helper method to create response map
     private Map<String, Object> getTokenResponse(String token) {
         return Map.of("token", token);
     }
 }
+
